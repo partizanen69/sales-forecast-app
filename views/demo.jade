@@ -1,0 +1,26 @@
+include ./layout
+
+block content
+    h1 Demo
+    form(action='/demo/create', method='post')
+        button(type='submit') Fill db
+    table.table.table-bordered.table-sm#demo-table
+        tr
+            th Week ISO
+            th Sales, UAH
+            th Weighted average
+            th Seasonal coefficient
+            th Period number, x
+            th Sales cleared from seasonality, UAH
+            th Trend, UAH
+            th Forecast, UAH
+        for item in data
+            tr
+                td #{item.weekISO}
+                td #{item.sales}
+                td #{item.weigtedAverage}
+                td #{item.seasonalCoefficient}
+                td #{item.periodNumber}
+                td #{item.seasonalCoefficient}
+                td #{item.trend}
+                td #{item.forecast}
