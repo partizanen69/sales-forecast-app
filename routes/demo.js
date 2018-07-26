@@ -13,11 +13,17 @@ module.exports = {
                 item.salesClearedFromSeasonality = item.salesClearedFromSeasonality.toFixed(2);
                 item.trend = item.trend.toFixed(2);
                 item.forecast = item.forecast.toFixed(2);
+                if (item.weigtedAverage) {
+                    item.weigtedAverage = item.weigtedAverage.toFixed(2);
+                }
                 return item
             })
-            res.render('demo', {title: 'Demo', data: processedResult});
+            
+            var data1 = [1, 0, 4];
+            var data2 = [5, 7, 3];
+            res.render('demo', {title: 'Demo', data: processedResult, data1: data1, data2: data2});
         })
-        .limit(20)
+        .limit(100)
     },
     fillCollectionWithData: (req, res) => {
         Demo.insertMany(data, (err, result) => {

@@ -1,1 +1,1 @@
-#demo-table{width:auto;font-size:12px;margin:10px 0 0 10px}#demo-table td,#demo-table th{width:100px}#demo-table td{text-align:right}#demo-table th{text-align:center;vertical-align:middle}
+#container{width:100%;height:400px}#demo-table{width:auto;font-size:12px;margin:10px 0 0 10px}#demo-table td,#demo-table th{width:100px}#demo-table td{text-align:right}#demo-table th{text-align:center;vertical-align:middle}.demo-table-wrapper{height:650px;overflow:auto;display:inline-block;padding:2px}
