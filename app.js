@@ -43,6 +43,6 @@ app.get('/getting-started', (req, res) => {
 });
 
 //start server
-app.listen(3000, () => {
+app.listen(process.env.PORT, process.env.IP, () => {
 	console.log('Server has started!!!');
 });

@@ -28,14 +28,30 @@ module.exports = {
                 }
                 return item;
             });
-
-            var data1 = [1, 0, 4];
-            var data2 = [5, 7, 3];
+            
+            var dataForChart = {categories: [], actualSales: [], forecast: []}
+            var { categories, actualSales, forecast } = dataForChart;
+            
+            categories = objects.map((item) => item.weekISO)
+            actualSales = objects.map((item) => item.sales)
+            forecast = objects.map((item, idx) => {
+                if (idx < actualSales.filter(Number).length) {
+                    return 0;
+                } else {
+                    return item.forecast;
+                }
+            })
+            
+            console.log(actualSales.filter(Number).length);
+            console.log(forecast[200]);
+            console.log(actualSales[201]);
+            
             res.render('demo', {
                 title: 'Demo',
                 data: processedResult,
-                data1: data1,
-                data2: data2,
+                categories,
+                actualSales,
+                forecast
             });
         });
     },
