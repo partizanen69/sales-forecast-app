@@ -10,9 +10,29 @@ block content
 			button(type="submit").btn.btn-secondary Upload
 	p Clear database
 	form(action="/get-start/clear", method="POST")
-		button(type="submit")btn.btn-primary Clear DB
-		p #{numDocs} documents
+		button(type="submit").btn.btn-primary Clear DB
 	p Calculate forecast
 	form(action="/get-start/calc", method="POST")
 		button(type="submit").btn.btn-primary Calculate 
-
+	p Resulting table
+	div.demo-table-wrapper
+		table.table.table-bordered.table-sm#result-table
+			tr
+				th Week ISO
+				th Sales, UAH
+				th Weighted average
+				th Seasonal coefficient
+				th Period number, x
+				th Sales cleared from seasonality, UAH
+				th Trend, UAH
+				th Forecast, UAH
+			for item in tableData
+				tr
+					td #{item.weekISO}
+					td #{item.sales}
+					td #{item.weightedAvg}
+					td #{item.seasCoef}
+					td #{item.perNum}
+					td #{item.clearSales}
+					td #{item.trend}
+					td #{item.forecast}

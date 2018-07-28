@@ -6,7 +6,7 @@ var forecastSchema = new Schema({
     year: Number,
     weekNum: Number,
     sales: Number,
-    weigtedAvg: Number,
+    weightedAvg: Schema.Types.Mixed,
     seasCoef: Number,
     perNum: Number,
     clearSales: Number,
