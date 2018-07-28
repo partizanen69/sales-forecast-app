@@ -1,7 +1,7 @@
 var mongoose = require('mongoose'),
     Schema = mongoose.Schema;
 
-var demoSchema = new Schema({
+var forecastSchema = new Schema({
     weekISO: Number,
     year: Number,
     weekNum: Number,
@@ -14,4 +14,4 @@ var demoSchema = new Schema({
     forecast: Number,
 });
 
-mongoose.model('Demo', demoSchema);
+mongoose.model('Forecast', forecastSchema);

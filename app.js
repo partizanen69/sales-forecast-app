@@ -3,6 +3,7 @@ const express = require('express'),
 	path = require('path'),
 	lessMiddleware = require('less-middleware'),
 	mongoose = require('mongoose'),
+	fileUpload = require('express-fileupload'),
 	app = express();
 
 //view engine setup
@@ -10,6 +11,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(fileUpload());
 app.use(lessMiddleware(__dirname + '/public'));
 
 //telling express to serve static objects from public folder
@@ -17,6 +19,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 //connecting to the db
 require('./config/models/Demo');
+require('./config/models/Forecast');
 mongoose.connect(
 	'mongodb://localhost/sales-forecast',
 	() => {
@@ -32,14 +35,17 @@ var demo = require('./routes/demo');
 router.get('/demo', demo.viewPage);
 router.post('/demo/create', demo.fillCollectionWithData);
 
+//route for get-start page
+var getStart = require('./routes/get-start');
+router.get('/get-start', getStart.viewPage);
+router.post('/get-start/upload', getStart.upload);
+router.post('/get-start/clear', getStart.clear);
+router.post('/get-start/calc', getStart.calculate);
+
 app.use('/', router);
 
 app.get('/', (req, res) => {
 	res.render('home', { title: 'Sales forecast' });
-});
-
-app.get('/getting-started', (req, res) => {
-	res.render('getting-started', { title: 'Getting started' });
 });
 
 //start server

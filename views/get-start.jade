@@ -1,0 +1,18 @@
+include ./layout
+
+block content
+	h1 Getting started
+	form(action="/get-start/upload", method="POST", encType="multipart/form-data")
+		p Click <a href="#">here</a> to download an example template. CSV file with ';' (semicolon) delimeter.
+		div.form-group
+			label Upload a csv file
+			input(type="file", name="csv", accept="*.csv").form-control-file
+			button(type="submit").btn.btn-secondary Upload
+	p Clear database
+	form(action="/get-start/clear", method="POST")
+		button(type="submit")btn.btn-primary Clear DB
+		p #{numDocs} documents
+	p Calculate forecast
+	form(action="/get-start/calc", method="POST")
+		button(type="submit").btn.btn-primary Calculate 
+
