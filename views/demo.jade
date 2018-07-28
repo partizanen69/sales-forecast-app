@@ -16,14 +16,14 @@ block content
                 th Sales cleared from seasonality, UAH
                 th Trend, UAH
                 th Forecast, UAH
-            for item in data
+            for item in tableData
                 tr
                     td #{item.weekISO}
                     td #{item.sales}
-                    td #{item.weigtedAverage}
-                    td #{item.seasonalCoefficient}
-                    td #{item.periodNumber}
-                    td #{item.seasonalCoefficient}
+                    td #{item.weigtedAvg}
+                    td #{item.seasCoef}
+                    td #{item.perNum}
+                    td #{item.clearSales}
                     td #{item.trend}
                     td #{item.forecast}
     script.
@@ -33,7 +33,7 @@ block content
                     type: 'areaspline'
                 },
                 title: {
-                    text: 'Average fruit consumption during one week'
+                    text: 'Actual sales within specified period and forecasted sales'
                 },
                 legend: {
                     layout: 'vertical',
@@ -46,7 +46,7 @@ block content
                     backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
                 },
                 xAxis: {
-                    categories: [#{categories}],
+                    categories: [#{cats}],
                     plotBands: [{ // visualize the weekend
                         from: 4.5,
                         to: 6.5,
@@ -55,12 +55,12 @@ block content
                 },
                 yAxis: {
                     title: {
-                        text: 'Fruit units'
+                        text: 'Sales, UAH'
                     }
                 },
                 tooltip: {
                     shared: true,
-                    valueSuffix: ' units'
+                    valueSuffix: ' UAH'
                 },
                 credits: {
                     enabled: false
@@ -71,8 +71,8 @@ block content
                     }
                 },
                 series: [{
-                    name: 'John',
-                    data: [#{actualSales}]
+                    name: 'Actual Sales',
+                    data: [#{actSales}]
                 },{
                     name: 'Forecast',
                     data: [#{forecast}]

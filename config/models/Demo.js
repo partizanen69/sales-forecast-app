@@ -5,14 +5,14 @@ var mongoose = require('mongoose'),
 var demoSchema = new Schema({
     weekISO: Number,
     year: Number,
-    weekNumber: Number,
+    weekNum: Number,
     sales: Number,
-    weigtedAverage: Number,
-    seasonalCoefficient: Number,
-    periodNumber: Number,
-    salesClearedFromSeasonality: Number,
+    weigtedAvg: Number,
+    seasCoef: Number,
+    perNum: Number,
+    clearSales: Number,
     trend: Number,
-    forecast: Number
-})
+    forecast: Number,
+});
 
 mongoose.model('Demo', demoSchema);
