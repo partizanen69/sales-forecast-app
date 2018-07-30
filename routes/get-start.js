@@ -124,39 +124,79 @@ module.exports = {
 		};
 
 		const four = objs => {
-			//sum x*y
-			var c = objs.reduce((sum, item) => {
-				return sum + item.xTimesY;
-			}, 0);
-			console.log('c', c);
+			var c = 0,
+				d = 0,
+				e = 0,
+				f = 0;
+			for (var i = 0; i < objs.length; i++) {
+				c += objs[i].xTimesY; //sum x*y
+				d += objs[i].perNum;
+				e += objs[i].clearSales;
+				f += objs[i].xSqr; //sum of x^2
+			}
+			d /= objs.length; // average of sum of periods
+			e /= objs.length; //average cleared sales
+			b =
+				(c - objs.length * d * e) /
+				(f - objs.length * Math.pow(d, 2)); //b value of linear regression
+			a = e - b * d; //a value of linear regression
 
-			// average of sum of periods
-			var d =
-				objs.reduce((sum, item) => {
-					return sum + item.perNum;
-				}, 0) / objs.length;
-			console.log('d', d);
+			//var foreCast = [
+			//{weekISO: , year: , weekNum: , seasCoef: , perNum: , trend: , forecast}]
+			// var foreCast = [];
+			var q = objs[objs.length - 1].weekISO;
+			var lastPerNum = objs[objs.length - 1].perNum;
+			for (var i = 0; i < 52; i++) {
+				q += 1;
+				var qq = String(q).substr(-2);
+				// var check = Number(q.substr(-2));
+				if (qq <= 52) {
+					objs.push({ weekISO: q });
+				} else {
+					q =
+						100 * (Number(String(q).substr(0, 4)) + 1) +
+						1;
+					objs.push({ weekISO: q });
+				}
+			}
 
-			//average cleared sales
-			var e =
-				objs.reduce((sum, item) => {
-					return sum + item.clearSales;
-				}, 0) / objs.length;
-			console.log('e', e);
+			for (var i = objs.length - 52; i < objs.length; i++) {
+				objs[i].year = Number(
+					String(objs[i].weekISO).substr(0, 4)
+				);
+				objs[i].weekNum = Number(
+					String(objs[i].weekISO).substr(-2)
+				);
+				lastPerNum += 1;
+				objs[i].perNum = lastPerNum;
+			}
 
-			//sum of x^2
-			var f = objs.reduce((sum, item) => {
-				return sum + item.xSqr;
-			}, 0);
-			console.log('f', f);
-			console.log('objs[199].xSqr', objs[199].xSqr);
-			console.log('objs[199].perNum', objs[199].perNum);
+			for (var i = objs.length - 52; i < objs.length; i++) {
+				var relValue1 = objs.find(elem => {
+					return (
+						objs[i].year - 1 === elem.year &&
+						objs[i].weekNum === elem.weekNum
+					);
+				});
 
-			g = objs.length * d * e;
-			h = objs.length * Math.pow(d, 2);
-			b = (c + g) / (f - h);
+				var relValue2 = objs.find(elem => {
+					return (
+						objs[i].year - 2 === elem.year &&
+						objs[i].weekNum === elem.weekNum
+					);
+				});
 
-			console.log('b', b);
+				objs[i].seasCoef =
+					(relValue1.seasCoef + relValue2.seasCoef) / 2;
+			}
+
+			objs.forEach((item, idx) => {
+				item.trend = a + b * item.perNum;
+				item.forecast = item.trend * item.seasCoef;
+			});
+
+			console.log('objs[200]', objs[200]);
+			console.log('objs[last]', objs[objs.length - 1]);
 
 			return Promise.resolve(objs);
 		};
@@ -165,28 +205,59 @@ module.exports = {
 			.then(three)
 			.then(four)
 			.then(objs => {
-				objs.forEach((item, idx) => {
+				for (var i = 0; i < objs.length - 52; i++) {
 					Forecast.findOneAndUpdate(
-						{ _id: item._id },
+						{ _id: objs[i]._id },
 						{
-							perNum: item.perNum,
-							weightedAvg: item.weightedAvg,
-							seasCoef: item.seasCoef,
-							clearSales: item.clearSales,
+							perNum: objs[i].perNum,
+							weightedAvg: objs[i].weightedAvg,
+							seasCoef: objs[i].seasCoef,
+							clearSales: objs[i].clearSales,
+							trend: objs[i].trend,
+							forecast: objs[i].forecast,
 						},
 						(err, doc) => {
 							if (err) console.log(err);
 						}
 					);
-				});
-			});
+				}
+				for (var i = objs.length - 52; i < objs.length; i++) {
+					Forecast.findOneAndUpdate(
+						{ _id: mongoose.Types.ObjectId() },
+						{
+							weekISO: objs[i].weekISO,
+							year: objs[i].year,
+							weekNum: objs[i].weekNum,
+							perNum: objs[i].perNum,
+							seasCoef: objs[i].seasCoef,
+							trend: objs[i].trend,
+							forecast: objs[i].forecast,
+						},
+						{ upsert: true },
+						(err, docs) => {
+							if (err) console.log(err);
+						}
+					);
+				}
+
+				// objs.forEach((item, idx) => {
+				// 	Forecast.findOneAndUpdate(
+				// 		{ _id: item._id },
+				// 		{
+				// 			perNum: item.perNum,
+				// 			weightedAvg: item.weightedAvg,
+				// 			seasCoef: item.seasCoef,
+				// 			clearSales: item.clearSales,
+				// 		},
+				// 		(err, doc) => {
+				// 			if (err) console.log(err);
+				// 		}
+				// 	);
+				// });
+			})
+			.catch(error => console.log(error));
 
 		res.redirect('/get-start');
-
-		// one.then(two)
-		// 	.then(three)
-		// 	.then(four)
-		// 	.catch(err => console.log(err.message));
 	},
 	clear: (req, res) => {
 		Forecast.remove({}, (err, result) => {
