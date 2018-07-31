@@ -49,6 +49,6 @@ app.get('/', (req, res) => {
 });
 
 //start server
-app.listen(3000, () => {
+app.listen(process.env.PORT, process.env.ip, () => {
 	console.log('Server has started!!!');
 });

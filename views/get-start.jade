@@ -1,38 +1,94 @@
 include ./layout
 
 block content
-	h1 Getting started
-	form(action="/get-start/upload", method="POST", encType="multipart/form-data")
-		p Click <a href="#">here</a> to download an example template. CSV file with ';' (semicolon) delimeter.
-		div.form-group
-			label Upload a csv file
-			input(type="file", name="csv", accept="*.csv").form-control-file
-			button(type="submit").btn.btn-secondary Upload
-	p Clear database
-	form(action="/get-start/clear", method="POST")
-		button(type="submit").btn.btn-primary Clear DB
-	p Calculate forecast
-	form(action="/get-start/calc", method="POST")
-		button(type="submit").btn.btn-primary Calculate 
-	p Resulting table
-	div.demo-table-wrapper
-		table.table.table-bordered.table-sm#result-table
-			tr
-				th Week ISO
-				th Sales, UAH
-				th Weighted average
-				th Seasonal coefficient
-				th Period number, x
-				th Sales cleared from seasonality, UAH, y
-				th Trend, UAH
-				th Forecast, UAH
-			for item in tableData
-				tr
-					td #{item.weekISO}
-					td #{item.sales}
-					td #{item.weightedAvg}
-					td #{item.seasCoef}
-					td #{item.perNum}
-					td #{item.clearSales}
-					td #{item.trend}
-					td #{item.forecast}
+    h1 Getting started
+    form(action="/get-start/upload", method="POST", encType="multipart/form-data")
+        p Click <a href="#">here</a> to download an example template. CSV file with ';' (semicolon) delimeter.
+        div.form-group
+            label Upload a csv file
+            input(type="file", name="csv", accept="*.csv").form-control-file
+            button(type="submit").btn.btn-secondary Upload
+    p Clear database
+    form(action="/get-start/clear", method="POST")
+        button(type="submit").btn.btn-primary Clear DB
+    p Calculate forecast
+    form(action="/get-start/calc", method="POST")
+        button(type="submit").btn.btn-primary Calculate 
+    p Resulting chart
+    div#container
+    p Resulting table
+    div.demo-table-wrapper
+        table.table.table-bordered.table-sm#result-table
+            tr
+                th Week ISO
+                th Sales, UAH
+                th Weighted average
+                th Seasonal coefficient
+                th Period number, x
+                th Sales cleared from seasonality, UAH, y
+                th Trend, UAH
+                th Forecast, UAH
+            for item in tableData
+                tr
+                    td #{item.weekISO}
+                    td #{item.sales}
+                    td #{item.weightedAvg}
+                    td #{item.seasCoef}
+                    td #{item.perNum}
+                    td #{item.clearSales}
+                    td #{item.trend}
+                    td #{item.forecast}
+    script.
+        $(function () { 
+                var myChart = Highcharts.chart('container', {
+                chart: {
+                    type: 'areaspline'
+                },
+                title: {
+                    text: 'Actual sales within specified period and forecasted sales'
+                },
+                legend: {
+                    layout: 'vertical',
+                    align: 'left',
+                    verticalAlign: 'top',
+                    x: 150,
+                    y: 100,
+                    floating: true,
+                    borderWidth: 1,
+                    backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
+                },
+                xAxis: {
+                    categories: [#{cats}],
+                    plotBands: [{ // visualize the weekend
+                        from: 4.5,
+                        to: 6.5,
+                        color: 'rgba(68, 170, 213, .2)'
+                    }]
+                },
+                yAxis: {
+                    title: {
+                        text: 'Sales, UAH'
+                    }
+                },
+                tooltip: {
+                    shared: true,
+                    valueSuffix: ' UAH'
+                },
+                credits: {
+                    enabled: false
+                },
+                plotOptions: {
+                    areaspline: {
+                        fillOpacity: 0.5
+                    }
+                },
+                series: [{
+                    name: 'Actual Sales',
+                    data: [#{sales}]
+                },{
+                    name: 'Forecast',
+                    data: [#{forecast}]
+                }
+                ]
+            });
+        });

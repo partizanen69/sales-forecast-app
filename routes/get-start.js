@@ -7,9 +7,13 @@ module.exports = {
 		Forecast.find({})
 			.sort({ weekISO: 1 })
 			.exec((err, objs) => {
-				if (err) res.send(err);
-
-				var tableData = objs.map(i => {
+				if (err) console.log(err);
+				
+				var cats = [];
+				var sales = [];
+				var forecast = [];
+				
+				var tableData = objs.map((i, idx) => {
 					if (i.sales) i.sales = i.sales.toFixed(2);
 					if (i.seasCoef)
 						i.seasCoef = i.seasCoef.toFixed(2);
@@ -20,12 +24,28 @@ module.exports = {
 						i.forecast = i.forecast.toFixed(2);
 					if (!isNaN(i.weightedAvg))
 						i.weightedAvg = i.weightedAvg.toFixed(2);
+						
+					cats.push(i.weekISO);
+					if (i.sales) {
+						sales.push(i.sales);
+					} else {
+						sales.push(null);
+					}
+					
+					if (idx < objs.length - 52) {
+						forecast.push(0);
+					} else {
+						forecast.push(i.forecast);
+					}
 					return i;
 				});
-
+				
 				res.render('get-start', {
 					title: 'Getting started',
 					tableData,
+					cats,
+					sales,
+					forecast
 				});
 			});
 	},
