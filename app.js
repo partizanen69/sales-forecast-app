@@ -20,8 +20,16 @@ app.use(express.static(path.join(__dirname, 'public')));
 //connecting to the db
 require('./config/models/Demo');
 require('./config/models/Forecast');
+// mongoose.connect(
+// 	'mongodb://localhost/sales-forecast',
+// 	() => {
+// 		console.log('Connected to the database');
+// 	}
+// );
+// mongodb://oleksii:Q55555@ds161751.mlab.com:61751/sales-forecast
+
 mongoose.connect(
-	'mongodb://localhost/sales-forecast',
+	'mongodb://oleksii:Q55555@ds161751.mlab.com:61751/sales-forecast',
 	() => {
 		console.log('Connected to the database');
 	}
