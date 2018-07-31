@@ -3,7 +3,7 @@ include ./layout
 block content
     h1 Getting started
     form(action="/get-start/upload", method="POST", encType="multipart/form-data")
-        p Click <a href="#">here</a> to download an example template. CSV file with ';' (semicolon) delimeter.
+        p Click <a href="/files/csv-template.csv">here</a> to download an example template. CSV file with ';' (semicolon) delimeter. data should not be less than for two full years (102 rows)
         div.form-group
             label Upload a csv file
             input(type="file", name="csv", accept="*.csv").form-control-file
