@@ -4,6 +4,7 @@ const express = require('express'),
 	lessMiddleware = require('less-middleware'),
 	mongoose = require('mongoose'),
 	fileUpload = require('express-fileupload'),
+	session = require('express-session'),
 	app = express();
 
 //view engine setup
@@ -13,6 +14,7 @@ app.set('view engine', 'jade');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(fileUpload());
 app.use(lessMiddleware(__dirname + '/public'));
+app.use(session({ secret: 'ssshhhhh' }));
 
 //telling express to serve static objects from public folder
 app.use(express.static(path.join(__dirname, 'public')));
@@ -49,6 +51,6 @@ app.get('/', (req, res) => {
 });
 
 //start server
-app.listen(process.env.PORT, process.env.ip, () => {
+app.listen(3000, () => {
 	console.log('Server has started!!!');
 });

@@ -8,11 +8,11 @@ module.exports = {
 			.sort({ weekISO: 1 })
 			.exec((err, objs) => {
 				if (err) console.log(err);
-				
+
 				var cats = [];
 				var sales = [];
 				var forecast = [];
-				
+
 				var tableData = objs.map((i, idx) => {
 					if (i.sales) i.sales = i.sales.toFixed(2);
 					if (i.seasCoef)
@@ -24,28 +24,23 @@ module.exports = {
 						i.forecast = i.forecast.toFixed(2);
 					if (!isNaN(i.weightedAvg))
 						i.weightedAvg = i.weightedAvg.toFixed(2);
-						
+
 					cats.push(i.weekISO);
-					if (i.sales) {
-						sales.push(i.sales);
-					} else {
-						sales.push(null);
-					}
-					
-					if (idx < objs.length - 52) {
-						forecast.push(0);
-					} else {
-						forecast.push(i.forecast);
-					}
+					i.sales ? sales.push(i.sales) : sales.push(null);
+					idx < objs.length - 52
+						? forecast.push(0)
+						: forecast.push(i.forecast);
 					return i;
 				});
-				
+
+				console.log('req.session.a', req.session.a);
+
 				res.render('get-start', {
 					title: 'Getting started',
 					tableData,
 					cats,
 					sales,
-					forecast
+					forecast,
 				});
 			});
 	},
@@ -67,7 +62,9 @@ module.exports = {
 			.on('end', () => {
 				Forecast.create(arrToDb, (err, docs) => {
 					if (err) res.send(err);
+					console.log('arrToDb', arrToDb.length);
 				});
+				req.session.a = 'Way';
 				res.redirect('/get-start');
 			});
 	},
@@ -161,25 +158,25 @@ module.exports = {
 				(f - objs.length * Math.pow(d, 2)); //b value of linear regression
 			a = e - b * d; //a value of linear regression
 
-			//var foreCast = [
-			//{weekISO: , year: , weekNum: , seasCoef: , perNum: , trend: , forecast}]
-			// var foreCast = [];
-			var q = objs[objs.length - 1].weekISO;
+			//add weekISO values for new 52 weeks
+			var lastWeek = objs[objs.length - 1].weekISO;
 			var lastPerNum = objs[objs.length - 1].perNum;
 			for (var i = 0; i < 52; i++) {
-				q += 1;
-				var qq = String(q).substr(-2);
-				// var check = Number(q.substr(-2));
+				lastWeek += 1;
+				var qq = String(lastWeek).substr(-2);
 				if (qq <= 52) {
-					objs.push({ weekISO: q });
+					objs.push({ weekISO: lastWeek });
 				} else {
-					q =
-						100 * (Number(String(q).substr(0, 4)) + 1) +
+					lastWeek =
+						100 *
+							(Number(String(lastWeek).substr(0, 4)) +
+								1) +
 						1;
-					objs.push({ weekISO: q });
+					objs.push({ weekISO: lastWeek });
 				}
 			}
 
+			//add year, weekNum and period num for new 52 weeks
 			for (var i = objs.length - 52; i < objs.length; i++) {
 				objs[i].year = Number(
 					String(objs[i].weekISO).substr(0, 4)
@@ -191,6 +188,7 @@ module.exports = {
 				objs[i].perNum = lastPerNum;
 			}
 
+			//add seas coeff for new 52 weeks
 			for (var i = objs.length - 52; i < objs.length; i++) {
 				var relValue1 = objs.find(elem => {
 					return (
@@ -210,13 +208,11 @@ module.exports = {
 					(relValue1.seasCoef + relValue2.seasCoef) / 2;
 			}
 
+			//calc trend and forecast based on a and b values
 			objs.forEach((item, idx) => {
 				item.trend = a + b * item.perNum;
 				item.forecast = item.trend * item.seasCoef;
 			});
-
-			console.log('objs[200]', objs[200]);
-			console.log('objs[last]', objs[objs.length - 1]);
 
 			return Promise.resolve(objs);
 		};
@@ -259,21 +255,6 @@ module.exports = {
 						}
 					);
 				}
-
-				// objs.forEach((item, idx) => {
-				// 	Forecast.findOneAndUpdate(
-				// 		{ _id: item._id },
-				// 		{
-				// 			perNum: item.perNum,
-				// 			weightedAvg: item.weightedAvg,
-				// 			seasCoef: item.seasCoef,
-				// 			clearSales: item.clearSales,
-				// 		},
-				// 		(err, doc) => {
-				// 			if (err) console.log(err);
-				// 		}
-				// 	);
-				// });
 			})
 			.catch(error => console.log(error));
 
