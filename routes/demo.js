@@ -6,7 +6,7 @@ module.exports = {
         Demo.find({})
             .sort({ weekISO: 1 })
             .exec((err, objs) => {
-                if (err) res.send(err);
+                if (err) console.log(err);
                 var tableData = objs.map(i => {
                     if (i.sales) i.sales = i.sales.toFixed(2);
                     if (i.seasCoef)
@@ -39,7 +39,7 @@ module.exports = {
     },
     fillCollectionWithData: (req, res) => {
         Demo.insertMany(data, { ordered: false }, (err, result) => {
-            if (err) res.send(err);
+            if (err) console.log(err);
             res.redirect('/demo');
         });
     },
