@@ -1,82 +1,36 @@
 include ./layout
 
 block content
-    h1 Demo
-    // form(action='/demo/create', method='post')
-    //     button(type='submit') Fill db
-    div#container
-    div.demo-table-wrapper
-        table.table.table-bordered.table-sm#demo-table
-            tr
-                th Week ISO
-                th Sales, UAH
-                th Weighted average
-                th Seasonal coefficient
-                th Period number, x
-                th Sales cleared from seasonality, UAH
-                th Trend, UAH
-                th Forecast, UAH
-            for item in tableData
-                tr
-                    td #{item.weekISO}
-                    td #{item.sales}
-                    td #{item.weigtedAvg}
-                    td #{item.seasCoef}
-                    td #{item.perNum}
-                    td #{item.clearSales}
-                    td #{item.trend}
-                    td #{item.forecast}
-    script.
-        $(function () { 
-                var myChart = Highcharts.chart('container', {
-                chart: {
-                    type: 'areaspline'
-                },
-                title: {
-                    text: 'Actual sales within specified period and forecasted sales'
-                },
-                legend: {
-                    layout: 'vertical',
-                    align: 'left',
-                    verticalAlign: 'top',
-                    x: 150,
-                    y: 100,
-                    floating: true,
-                    borderWidth: 1,
-                    backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
-                },
-                xAxis: {
-                    categories: [#{cats}],
-                    plotBands: [{ // visualize the weekend
-                        from: 4.5,
-                        to: 6.5,
-                        color: 'rgba(68, 170, 213, .2)'
-                    }]
-                },
-                yAxis: {
-                    title: {
-                        text: 'Sales, UAH'
-                    }
-                },
-                tooltip: {
-                    shared: true,
-                    valueSuffix: ' UAH'
-                },
-                credits: {
-                    enabled: false
-                },
-                plotOptions: {
-                    areaspline: {
-                        fillOpacity: 0.5
-                    }
-                },
-                series: [{
-                    name: 'Actual Sales',
-                    data: [#{actSales}]
-                },{
-                    name: 'Forecast',
-                    data: [#{forecast}]
-                }
-                ]
-            });
-        });
+    div.container
+        h2 Demo
+        p After uploading initial data you will get the following result:
+        div.result-btns
+            div
+                div.chart-btn.active Chart
+                div.table-btn Table
+            div
+        div.result-container
+            div#container
+            div.demo-table-wrapper.hidden
+                table.table.table-bordered.table-sm#demo-table
+                    tr
+                        th Week ISO
+                        th Sales, UAH
+                        th Weighted average
+                        th Seasonal coefficient
+                        th Period number, x
+                        th Sales cleared from seasonality, UAH
+                        th Trend, UAH
+                        th Forecast, UAH
+                    for item in tableData
+                        tr
+                            td #{item.weekISO}
+                            td #{item.sales}
+                            td #{item.weigtedAvg}
+                            td #{item.seasCoef}
+                            td #{item.perNum}
+                            td #{item.clearSales}
+                            td #{item.trend}
+                            td #{item.forecast}
+        script.
+            var data = !{chartData};

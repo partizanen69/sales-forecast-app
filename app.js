@@ -28,7 +28,6 @@ require('./config/models/Forecast');
 // 		console.log('Connected to the database');
 // 	}
 // );
-// mongodb://oleksii:Q55555@ds161751.mlab.com:61751/sales-forecast
 
 mongoose.connect(
 	'mongodb://oleksii:Q55555@ds161751.mlab.com:61751/sales-forecast',
@@ -43,7 +42,6 @@ var router = express.Router();
 //routes for demo page
 var demo = require('./routes/demo');
 router.get('/demo', demo.viewPage);
-router.post('/demo/create', demo.fillCollectionWithData);
 
 //route for get-start page
 var getStart = require('./routes/get-start');

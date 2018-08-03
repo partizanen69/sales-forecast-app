@@ -2,106 +2,63 @@ include ./layout
 
 block content
 	div.container
-		//- p req.session.valid #{a}
-		h1 Getting started
+		h2 Step 1
+		p Click <a href="#">here</a> to download a template for uploading. Requirements to the file:
+		ol
+			li *.csv extension;
+			li ';' (semicolon) delimeter;
+			li Contains at least 102 rows (excluding headers) with data.
+		h2 Step 2
 		form(action="/get-start/upload", method="POST", encType="multipart/form-data")
-			p Click <a href="#">here</a> to download an example template. CSV file with ';' (semicolon) delimeter.
 			div.form-group
-				label Upload a csv file
-				input(type="file", name="csv", accept="*.csv").form-control-file
-				button(type="submit" disabled).btn.btn-secondary#upload Upload
-		p Calculate forecast
+				label.custom-button
+					input(type="file", name="csv", accept="*.csv")
+					i.fas.fa-cloud-upload-alt
+					div Upload a file...
+				div.msg-upload
+					if uploadErr
+					span= uploadErr
+				div
+					button(type="submit" disabled).btn.btn-secondary#upload Upload
+		h2 Step 3 
 		form(action="/get-start/calc", method="POST")
-			button(type="submit").btn.btn-primary Calculate 
-		p Clear database
-		form(action="/get-start/clear", method="POST")
-			button(type="submit").btn.btn-primary Clear DB
-		p Resulting chart
-		div#container
-		p Resulting table
-		div.demo-table-wrapper
-			table.table.table-bordered.table-sm#result-table
-				tr
-					th Week ISO
-					th Sales, UAH
-					th Weighted average
-					th Seasonal coefficient
-					th Period number, x
-					th Sales cleared from seasonality, UAH, y
-					th Trend, UAH
-					th Forecast, UAH
-				for item in tableData
+			button(type="submit").custom-button 
+				i.fas.fa-chart-line
+				div Calculate
+			div.msg-calc
+				if calcErr
+				span= calcErr
+		h2 Get result
+		div.result-btns
+			div
+				div.chart-btn.active Chart
+				div.table-btn Table
+			div
+				form(action="/get-start/clear", method="POST")
+					button(type="submit").btn.btn-danger Clear results
+		div.result-container
+			div#container
+			div.demo-table-wrapper.hidden
+				table.table.table-bordered.table-sm#result-table
 					tr
-					td #{item.weekISO}
-					td #{item.sales}
-					td #{item.weightedAvg}
-					td #{item.seasCoef}
-					td #{item.perNum}
-					td #{item.clearSales}
-					td #{item.trend}
-					td #{item.forecast}
-		div.row
-			div.col-4
-				div.list-group#list-tab(role="tablist")
-					a.list-group-item.list-group-item-action.active#list-home-list(data-toggle="list" href="#list-home" role="tab" aria-controls="home") Home
-					a.list-group-item.list-group-item-action#list-profile-list(data-toggle="list" href="#list-profile" role="tab" aria-controls="profile") Profile
-					a.list-group-item.list-group-item-action#list-messages-list(data-toggle="list" href="#list-messages" role="tab" aria-controls="messages") Messages
-			div.col-8
-				div.tab-content#nav-tabContent
-					div.tab-pane.fade.show.active#list-home(role="tabpanel" aria-labelledby="list-home-list") One
-					div.tab-pane.fade#list-profile(role="tabpanel" aria-labelledby="list-profile-list") Two
-					div.tab-pane.fade#list-messages(role="tabpanel" aria-labelledby="list-messages-list") Three
+						th Week ISO
+						th Sales, UAH
+						th Weighted average
+						th Seasonal coefficient
+						th Period number, x
+						th Sales cleared from seasonality, UAH, y
+						th Trend, UAH
+						th Forecast, UAH
+					for item in tableData
+						tr
+							td #{item.weekISO}
+							td #{item.sales}
+							td #{item.weightedAvg}
+							td #{item.seasCoef}
+							td #{item.perNum}
+							td #{item.clearSales}
+							td #{item.trend}
+							td #{item.forecast}
 		script.
-			$(function () { 
-			var myChart = Highcharts.chart('container', {
-				chart: {
-					type: 'areaspline'
-				},
-				title: {
-					text: 'Actual sales within specified period and forecasted sales'
-				},
-				legend: {
-					layout: 'vertical',
-					align: 'left',
-					verticalAlign: 'top',
-					x: 150,
-					y: 100,
-					floating: true,
-					borderWidth: 1,
-					backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
-				},
-				xAxis: {
-					categories: [#{cats}],
-					plotBands: [{ // visualize the weekend
-						from: 4.5,
-						to: 6.5,
-						color: 'rgba(68, 170, 213, .2)'
-					}]
-				},
-				yAxis: {
-					title: {
-						text: 'Sales, UAH'
-					}
-				},
-				tooltip: {
-					shared: true,
-					valueSuffix: ' UAH'
-				},
-				credits: {
-					enabled: false
-				},
-				plotOptions: {
-					areaspline: {
-						fillOpacity: 0.5
-					}
-				},
-				series: [{
-					name: 'Actual Sales',
-					data: [#{sales}]
-				},{
-					name: 'Forecast',
-					data: [#{forecast}]
-				}
-				]
-			});
-			});
+			var data = !{chartData};
+			

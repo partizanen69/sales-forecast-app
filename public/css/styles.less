@@ -1,36 +1,130 @@
-#container {
-    width: 100%;
-    height: 400px;
+p,
+ol,
+.form-group {
+    margin-bottom: 0;
 }
 
-#demo-table,
-#result-table {
-    width: auto;
-    font-size: 12px;
-    margin: 10px 0 0 10px;
+h2 {
+    margin-top: 0.5rem;
+}
 
-    & td,
-    th {
-        width: 100px;
-    }
+.msg-calc,
+.msg-upload {
+    font-size: 14px;
+    padding: 0;
+    line-height: 1;
 
-    & td {
-        text-align: right;
-    }
-
-    & th {
-        text-align: center;
-        vertical-align: middle;
+    & span {
+        color: red;
     }
 }
 
-#msg {
-    color: red;
+#upload {
+    margin-top: 3px;
 }
 
-.demo-table-wrapper {
-    height: 650px;
-    overflow: auto;
-    display: inline-block;
-    padding: 2px;
+.custom-button {
+    border: 1px solid #ccc;
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin: 0;
+    background-color: #fff;
+
+    & input[type='file'] {
+        display: none;
+    }
+
+    & i {
+        font-size: 30px;
+        margin-right: 8px;
+        color: #dc3545;
+    }
+}
+
+.custom-file-upload:hover {
+    background: #f8f8f8;
+}
+
+& .result-btns {
+    position: relative;
+    top: 2px;
+    z-index: 0;
+    display: flex;
+    justify-content: space-between;
+
+    & > div:last-child {
+        position: absolute;
+        transform: translateY(-50%);
+        top: 50%;
+        right: 0px;
+    }
+
+    & .chart-btn,
+    .table-btn {
+        display: inline-block;
+        padding: 10px 40px;
+        border-radius: 4px 4px 0 0;
+        margin: 0 2px;
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+        border: 1px solid #ddd;
+        cursor: pointer;
+    }
+
+    & .chart-btn:hover,
+    .table-btn:hover {
+        background: #f8f8f8;
+    }
+}
+
+.result-container {
+    position: relative;
+    margin: 0 0 50px 0;
+    border: 1px solid #ddd;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+    background-color: #fff;
+    z-index: 10;
+
+    & #container {
+        width: 100%;
+        height: 500px;
+    }
+
+    & .demo-table-wrapper {
+        height: 500px;
+        overflow: auto;
+        padding: 2px;
+    }
+
+    & #demo-table,
+    #result-table {
+        width: auto;
+        font-size: 12px;
+        margin: 10px 0 0 10px;
+
+        & td,
+        th {
+            width: 100px;
+        }
+
+        & td {
+            text-align: right;
+        }
+
+        & th {
+            text-align: center;
+            vertical-align: middle;
+        }
+    }
+}
+
+.hidden {
+    display: none;
+}
+
+.active {
+    background-color: #f8f8f8;
 }

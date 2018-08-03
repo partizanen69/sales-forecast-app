@@ -33,14 +33,21 @@ module.exports = {
 					return i;
 				});
 
-				console.log('req.session.a', req.session.a);
+				var uploadErr = req.session.uploadErr;
+				req.session.uploadErr = null;
+				var calcErr = req.session.calcErr;
+				req.session.calcErr = null;
 
 				res.render('get-start', {
 					title: 'Getting started',
 					tableData,
-					cats,
-					sales,
-					forecast,
+					chartData: JSON.stringify({
+						cats: cats,
+						sales: sales,
+						forecast: forecast,
+					}),
+					uploadErr,
+					calcErr,
 				});
 			});
 	},
@@ -60,15 +67,77 @@ module.exports = {
 				arrToDb.push(data);
 			})
 			.on('end', () => {
-				Forecast.create(arrToDb, (err, docs) => {
-					if (err) res.send(err);
-					console.log('arrToDb', arrToDb.length);
-				});
-				req.session.a = 'Way';
+				if (arrToDb.length > 101) {
+					Forecast.create(arrToDb, (err, docs) => {
+						if (err) res.send(err);
+					});
+				} else {
+					req.session.uploadErr =
+						'For precise forecast input data shall consist of at least 102 rows (2 years).';
+				}
 				res.redirect('/get-start');
 			});
 	},
 	calculate: (req, res) => {
+		Forecast.countDocuments({}, (err, count) => {
+			if (count) {
+				calculate();
+			} else {
+				req.session.calcErr = 'You have no data to calculate';
+				res.redirect('/get-start');
+			}
+		});
+
+		calculate = () => {
+			one.then(two)
+				.then(three)
+				.then(four)
+				.then(objs => {
+					for (var i = 0; i < objs.length - 52; i++) {
+						Forecast.findOneAndUpdate(
+							{ _id: objs[i]._id },
+							{
+								perNum: objs[i].perNum,
+								weightedAvg: objs[i].weightedAvg,
+								seasCoef: objs[i].seasCoef,
+								clearSales: objs[i].clearSales,
+								trend: objs[i].trend,
+								forecast: objs[i].forecast,
+							},
+							(err, doc) => {
+								if (err) console.log(err);
+							}
+						);
+					}
+					for (
+						var i = objs.length - 52;
+						i < objs.length;
+						i++
+					) {
+						Forecast.findOneAndUpdate(
+							{ _id: mongoose.Types.ObjectId() },
+							{
+								weekISO: objs[i].weekISO,
+								year: objs[i].year,
+								weekNum: objs[i].weekNum,
+								perNum: objs[i].perNum,
+								seasCoef: objs[i].seasCoef,
+								trend: objs[i].trend,
+								forecast: objs[i].forecast,
+							},
+							{ upsert: true },
+							(err, docs) => {
+								if (err) console.log(err);
+							}
+						);
+					}
+				})
+				.then(() => {
+					res.redirect('/get-start');
+				})
+				.catch(error => console.log(error));
+		};
+
 		const one = new Promise((resolve, reject) => {
 			Forecast.find()
 				.sort({ weekISO: 1 })
@@ -216,49 +285,6 @@ module.exports = {
 
 			return Promise.resolve(objs);
 		};
-
-		one.then(two)
-			.then(three)
-			.then(four)
-			.then(objs => {
-				for (var i = 0; i < objs.length - 52; i++) {
-					Forecast.findOneAndUpdate(
-						{ _id: objs[i]._id },
-						{
-							perNum: objs[i].perNum,
-							weightedAvg: objs[i].weightedAvg,
-							seasCoef: objs[i].seasCoef,
-							clearSales: objs[i].clearSales,
-							trend: objs[i].trend,
-							forecast: objs[i].forecast,
-						},
-						(err, doc) => {
-							if (err) console.log(err);
-						}
-					);
-				}
-				for (var i = objs.length - 52; i < objs.length; i++) {
-					Forecast.findOneAndUpdate(
-						{ _id: mongoose.Types.ObjectId() },
-						{
-							weekISO: objs[i].weekISO,
-							year: objs[i].year,
-							weekNum: objs[i].weekNum,
-							perNum: objs[i].perNum,
-							seasCoef: objs[i].seasCoef,
-							trend: objs[i].trend,
-							forecast: objs[i].forecast,
-						},
-						{ upsert: true },
-						(err, docs) => {
-							if (err) console.log(err);
-						}
-					);
-				}
-			})
-			.catch(error => console.log(error));
-
-		res.redirect('/get-start');
 	},
 	clear: (req, res) => {
 		Forecast.remove({}, (err, result) => {
