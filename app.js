@@ -22,6 +22,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 //connecting to the db
 require('./config/models/Demo');
 require('./config/models/Forecast');
+require('./config/models/Coefs');
 // mongoose.connect(
 // 	'mongodb://localhost/sales-forecast',
 // 	() => {

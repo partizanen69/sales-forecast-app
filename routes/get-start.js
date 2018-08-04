@@ -1,14 +1,21 @@
 const mongoose = require('mongoose'),
 	csv = require('fast-csv'),
-	Forecast = mongoose.model('Forecast');
+	Forecast = mongoose.model('Forecast'),
+	Coefs = mongoose.model('Coefs');
 
 module.exports = {
 	viewPage: (req, res) => {
-		Forecast.find({})
-			.sort({ weekISO: 1 })
-			.exec((err, objs) => {
-				if (err) console.log(err);
+		const one = new Promise((resolve, reject) => {
+			Forecast.find({})
+				.sort({ weekISO: 1 })
+				.exec((err, objs) => {
+					if (err) console.log(err);
+					resolve(objs);
+				});
+		});
 
+		const two = objs => {
+			return new Promise((resolve, reject) => {
 				var cats = [];
 				var sales = [];
 				var forecast = [];
@@ -26,7 +33,7 @@ module.exports = {
 						i.weightedAvg = i.weightedAvg.toFixed(2);
 
 					cats.push(i.weekISO);
-					i.sales ? sales.push(i.sales) : sales.push(null);
+					i.sales ? sales.push(i.sales) : sales.push(0);
 					idx < objs.length - 52
 						? forecast.push(0)
 						: forecast.push(i.forecast);
@@ -38,8 +45,7 @@ module.exports = {
 				var calcErr = req.session.calcErr;
 				req.session.calcErr = null;
 
-				res.render('get-start', {
-					title: 'Getting started',
+				var obj = {
 					tableData,
 					chartData: JSON.stringify({
 						cats: cats,
@@ -48,8 +54,41 @@ module.exports = {
 					}),
 					uploadErr,
 					calcErr,
+					title: 'Getting started',
+				};
+				resolve(obj);
+			});
+		};
+
+		const three = obj => {
+			return new Promise((resolve, reject) => {
+				Coefs.find({}, (err, docs) => {
+					if (err) console.log(err);
+					if (docs[0]) {
+						const {
+							sigmaForc,
+							sigmaSales,
+							mape,
+						} = docs[0];
+						var objToRender = Object.assign(obj, {
+							sigmaForc,
+							sigmaSales,
+							mape,
+						});
+						resolve(objToRender);
+						return true;
+					}
+					resolve(obj);
 				});
 			});
+		};
+
+		one.then(two)
+			.then(three)
+			.then(objToRender => {
+				res.render('get-start', objToRender);
+			})
+			.catch(error => console.log(error));
 	},
 	upload: (req, res) => {
 		if (!req.files)
@@ -83,7 +122,8 @@ module.exports = {
 			if (count) {
 				calculate();
 			} else {
-				req.session.calcErr = 'You have no data to calculate';
+				req.session.calcErr =
+					'You have no data to calculate. Upload file with initial data';
 				res.redirect('/get-start');
 			}
 		});
@@ -92,6 +132,7 @@ module.exports = {
 			one.then(two)
 				.then(three)
 				.then(four)
+				.then(five)
 				.then(objs => {
 					for (var i = 0; i < objs.length - 52; i++) {
 						Forecast.findOneAndUpdate(
@@ -136,6 +177,67 @@ module.exports = {
 					res.redirect('/get-start');
 				})
 				.catch(error => console.log(error));
+		};
+
+		const five = objs => {
+			return new Promise((resolve, reject) => {
+				var forecArr = objs.slice(objs.length - 52);
+				var saleArr = objs.slice(0, objs.length - 52);
+
+				//mean square deviation for forecasted sales last 52 weeks
+				var avgForecast =
+					forecArr.reduce(
+						(sum, item) => sum + item.forecast,
+						0
+					) / 52;
+				var forcDiffAvg = forecArr.map((item, idx) =>
+					Math.pow(item.forecast - avgForecast, 2)
+				);
+				var sigmaForc = Math.sqrt(
+					forcDiffAvg.reduce((sum, item) => sum + item, 0) /
+						52
+				);
+
+				//mean square deviation for actual sales
+				var avgSales =
+					saleArr.reduce(
+						(sum, item) => sum + item.sales,
+						0
+					) / saleArr.length;
+				var saleDiffAvg = saleArr.map((item, idx) =>
+					Math.pow(item.sales - avgSales, 2)
+				);
+				var sigmaSales = Math.sqrt(
+					saleDiffAvg.reduce((sum, item) => sum + item, 0) /
+						saleDiffAvg.length
+				);
+
+				//mean absolute percentage error
+				var sumOfDiff = saleArr.reduce((sum, item) => {
+					return (
+						sum +
+						Math.abs(
+							(item.sales - item.forecast) / item.sales
+						)
+					);
+				}, 0);
+				var mape = (1 / saleArr.length) * sumOfDiff;
+
+				Coefs.findOneAndUpdate(
+					{ _id: mongoose.Types.ObjectId() },
+					{
+						sigmaForc: sigmaForc.toFixed(2),
+						sigmaSales: sigmaSales.toFixed(2),
+						mape: mape.toFixed(2),
+					},
+					{ upsert: true },
+					(err, docs) => {
+						if (err) console.log(err);
+					}
+				);
+
+				resolve(objs);
+			});
 		};
 
 		const one = new Promise((resolve, reject) => {
@@ -185,111 +287,122 @@ module.exports = {
 		});
 
 		const two = objs => {
-			//calculate seasonal coefficient first 26 weeks
-			objs.forEach((i, idx) => {
-				if (idx < 26) {
-					var relValue = objs.find(
-						elem =>
-							elem.year === objs[idx].year + 1 &&
-							elem.weekNum === objs[idx].weekNum
-					);
-					i.seasCoef = relValue.seasCoef;
-				}
+			return new Promise((resolve, reject) => {
+				//calculate seasonal coefficient first 26 weeks
+				objs.forEach((i, idx) => {
+					if (idx < 26) {
+						var relValue = objs.find(
+							elem =>
+								elem.year === objs[idx].year + 1 &&
+								elem.weekNum === objs[idx].weekNum
+						);
+						i.seasCoef = relValue.seasCoef;
+					}
+				});
+				resolve(objs);
 			});
-			return Promise.resolve(objs);
 		};
 
 		const three = objs => {
-			//calculate cleared sales
-			objs.forEach((i, idx) => {
-				i.clearSales = i.sales / i.seasCoef;
-				i.xTimesY = i.perNum * i.clearSales;
-				i.xSqr = Math.pow(i.perNum, 2);
+			return new Promise((resolve, reject) => {
+				//calculate cleared sales
+				objs.forEach((i, idx) => {
+					i.clearSales = i.sales / i.seasCoef;
+					i.xTimesY = i.perNum * i.clearSales;
+					i.xSqr = Math.pow(i.perNum, 2);
+				});
+				resolve(objs);
 			});
-			return Promise.resolve(objs);
 		};
 
 		const four = objs => {
-			var c = 0,
-				d = 0,
-				e = 0,
-				f = 0;
-			for (var i = 0; i < objs.length; i++) {
-				c += objs[i].xTimesY; //sum x*y
-				d += objs[i].perNum;
-				e += objs[i].clearSales;
-				f += objs[i].xSqr; //sum of x^2
-			}
-			d /= objs.length; // average of sum of periods
-			e /= objs.length; //average cleared sales
-			b =
-				(c - objs.length * d * e) /
-				(f - objs.length * Math.pow(d, 2)); //b value of linear regression
-			a = e - b * d; //a value of linear regression
-
-			//add weekISO values for new 52 weeks
-			var lastWeek = objs[objs.length - 1].weekISO;
-			var lastPerNum = objs[objs.length - 1].perNum;
-			for (var i = 0; i < 52; i++) {
-				lastWeek += 1;
-				var qq = String(lastWeek).substr(-2);
-				if (qq <= 52) {
-					objs.push({ weekISO: lastWeek });
-				} else {
-					lastWeek =
-						100 *
-							(Number(String(lastWeek).substr(0, 4)) +
-								1) +
-						1;
-					objs.push({ weekISO: lastWeek });
+			return new Promise((resolve, reject) => {
+				var c = 0,
+					d = 0,
+					e = 0,
+					f = 0;
+				for (var i = 0; i < objs.length; i++) {
+					c += objs[i].xTimesY; //sum x*y
+					d += objs[i].perNum;
+					e += objs[i].clearSales;
+					f += objs[i].xSqr; //sum of x^2
 				}
-			}
+				d /= objs.length; // average of sum of periods
+				e /= objs.length; //average cleared sales
+				b =
+					(c - objs.length * d * e) /
+					(f - objs.length * Math.pow(d, 2)); //b value of linear regression
+				a = e - b * d; //a value of linear regression
 
-			//add year, weekNum and period num for new 52 weeks
-			for (var i = objs.length - 52; i < objs.length; i++) {
-				objs[i].year = Number(
-					String(objs[i].weekISO).substr(0, 4)
-				);
-				objs[i].weekNum = Number(
-					String(objs[i].weekISO).substr(-2)
-				);
-				lastPerNum += 1;
-				objs[i].perNum = lastPerNum;
-			}
+				//add weekISO values for new 52 weeks
+				var lastWeek = objs[objs.length - 1].weekISO;
+				var lastPerNum = objs[objs.length - 1].perNum;
+				for (var i = 0; i < 52; i++) {
+					lastWeek += 1;
+					var qq = String(lastWeek).substr(-2);
+					if (qq <= 52) {
+						objs.push({ weekISO: lastWeek });
+					} else {
+						lastWeek =
+							100 *
+								(Number(
+									String(lastWeek).substr(0, 4)
+								) +
+									1) +
+							1;
+						objs.push({ weekISO: lastWeek });
+					}
+				}
 
-			//add seas coeff for new 52 weeks
-			for (var i = objs.length - 52; i < objs.length; i++) {
-				var relValue1 = objs.find(elem => {
-					return (
-						objs[i].year - 1 === elem.year &&
-						objs[i].weekNum === elem.weekNum
+				//add year, weekNum and period num for new 52 weeks
+				for (var i = objs.length - 52; i < objs.length; i++) {
+					objs[i].year = Number(
+						String(objs[i].weekISO).substr(0, 4)
 					);
+					objs[i].weekNum = Number(
+						String(objs[i].weekISO).substr(-2)
+					);
+					lastPerNum += 1;
+					objs[i].perNum = lastPerNum;
+				}
+
+				//add seas coeff for new 52 weeks
+				for (var i = objs.length - 52; i < objs.length; i++) {
+					var relValue1 = objs.find(elem => {
+						return (
+							objs[i].year - 1 === elem.year &&
+							objs[i].weekNum === elem.weekNum
+						);
+					});
+
+					var relValue2 = objs.find(elem => {
+						return (
+							objs[i].year - 2 === elem.year &&
+							objs[i].weekNum === elem.weekNum
+						);
+					});
+
+					objs[i].seasCoef =
+						(relValue1.seasCoef + relValue2.seasCoef) / 2;
+				}
+
+				//calc trend and forecast based on a and b values
+				objs.forEach((item, idx) => {
+					item.trend = a + b * item.perNum;
+					item.forecast = item.trend * item.seasCoef;
 				});
 
-				var relValue2 = objs.find(elem => {
-					return (
-						objs[i].year - 2 === elem.year &&
-						objs[i].weekNum === elem.weekNum
-					);
-				});
-
-				objs[i].seasCoef =
-					(relValue1.seasCoef + relValue2.seasCoef) / 2;
-			}
-
-			//calc trend and forecast based on a and b values
-			objs.forEach((item, idx) => {
-				item.trend = a + b * item.perNum;
-				item.forecast = item.trend * item.seasCoef;
+				resolve(objs);
 			});
-
-			return Promise.resolve(objs);
 		};
 	},
 	clear: (req, res) => {
 		Forecast.remove({}, (err, result) => {
 			if (err) res.send(err);
-			res.redirect('/get-start');
 		});
+		Coefs.remove({}, (err, result) => {
+			if (err) res.send(err);
+		});
+		res.redirect('/get-start');
 	},
 };

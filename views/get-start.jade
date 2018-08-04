@@ -3,7 +3,10 @@ include ./layout
 block content
 	div.container
 		h2 Step 1
-		p Click <a href="#">here</a> to download a template for uploading. Requirements to the file:
+		p 
+			| Click 
+			a(href="/files/csv-template.csv") here 
+			| to download a template for uploading. Requirements to the file:
 		ol
 			li *.csv extension;
 			li ';' (semicolon) delimeter;
@@ -22,13 +25,20 @@ block content
 					button(type="submit" disabled).btn.btn-secondary#upload Upload
 		h2 Step 3 
 		form(action="/get-start/calc", method="POST")
-			button(type="submit").custom-button 
+			button(type="submit").custom-button#calculate 
 				i.fas.fa-chart-line
 				div Calculate
+				div.loading.hidden
 			div.msg-calc
 				if calcErr
 				span= calcErr
 		h2 Get result
+		if sigmaForc
+			p Mean absolute percentage error (MAPE): #{mape}
+			p Mean square deviation: 
+				ul
+					li for forecasted sales (last 52 weeks): #{sigmaForc}
+					li for actual sales (input data): #{sigmaSales} 
 		div.result-btns
 			div
 				div.chart-btn.active Chart

@@ -4,7 +4,25 @@ function init() {
 	$('input:file').change(isUpload);
 	$('.chart-btn').click(showChart);
 	$('.table-btn').click(showTable);
-	buildChart();
+	$('#calculate').click(isCalculated);
+	if (typeof data !== 'undefined') buildChart();
+}
+
+var count = 0;
+function isCalculated(e) {
+	const isResult = $('#result-table td:eq(7)').text();
+	count++;
+	if (isResult) {
+		e.preventDefault();
+		$('.msg-calc').html(
+			'<span>Clear existing result first</span>'
+		);
+	} else {
+		$('.loading').removeClass('hidden');
+	}
+	if (count > 1) {
+		$('#calculate').attr('disabled', true);
+	}
 }
 
 function showTable() {
