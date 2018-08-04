@@ -14,7 +14,7 @@ app.set('view engine', 'jade');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(fileUpload());
 app.use(lessMiddleware(__dirname + '/public'));
-app.use(session({ secret: 'ssshhhhh' }));
+// app.use(session({ secret: 'ssshhhhh' }));
 
 //telling express to serve static objects from public folder
 app.use(express.static(path.join(__dirname, 'public')));
