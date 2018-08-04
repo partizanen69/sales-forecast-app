@@ -40,10 +40,10 @@ module.exports = {
 					return i;
 				});
 
-				// var uploadErr = req.session.uploadErr;
-				// req.session.uploadErr = null;
-				// var calcErr = req.session.calcErr;
-				// req.session.calcErr = null;
+				var uploadErr = req.session.uploadErr;
+				req.session.uploadErr = null;
+				var calcErr = req.session.calcErr;
+				req.session.calcErr = null;
 
 				var obj = {
 					tableData,
@@ -110,11 +110,10 @@ module.exports = {
 					Forecast.create(arrToDb, (err, docs) => {
 						if (err) res.send(err);
 					});
+				} else {
+					req.session.uploadErr =
+						'For precise forecast input data shall consist of at least 102 rows (2 years).';
 				}
-				// else {
-				// 	req.session.uploadErr =
-				// 		'For precise forecast input data shall consist of at least 102 rows (2 years).';
-				// }
 				res.redirect('/get-start');
 			});
 	},
@@ -123,8 +122,8 @@ module.exports = {
 			if (count) {
 				calculate();
 			} else {
-				// req.session.calcErr =
-				// 	'You have no data to calculate. Upload file with initial data';
+				req.session.calcErr =
+					'You have no data to calculate. Upload file with initial data';
 				res.redirect('/get-start');
 			}
 		});
