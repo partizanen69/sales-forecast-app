@@ -2,10 +2,38 @@ include ./layout
 
 block content
 	div.container
-		p Welcome to the sales forecast application developed by Oleksii Ablitsov - fullstack javascript developer.
-		p To develop this app I used:
+		p Welcome to the sales forecast app developed by Oleksii Ablitsov - fullstack javascript developer.
+		p The app technology stack is:
 		ol 
 			li Backend: NodeJS, Express, MongoDB, Mongoose;
 			li Front End: JQuery, Jade, Bootstrap, Less, HighCharts.
-		p Source code of the app can be reviewed at 
+		p Source code of the app can be viewed at 
 			a(href="https://github.com/partizanen69/sales-forecast-app") GitHub.
+		h2 How does this app work?
+		p 
+		| The app implements logic presented in this 
+		a(href="/files/Data-Science-website.xlsx") file
+		| . To use the app, please do the following:
+		.row
+			.col-md-4.app-desc
+				div.icon
+					i.far.fa-file-excel
+				div.heading Prepare input file
+				div.desc 
+				| Prepare 
+				a(href="/files/csv-template.csv") .csv file 
+				| with sales historical data broken by weeks. In order to get precise forecast, the file shall contain data for not less than 2 years (102 weeks).
+			.col-md-4.app-desc
+				div.icon
+					i.fas.fa-cloud-upload-alt
+				div.heading Upload it in the app
+				div.desc 
+				| Upload prepared file on the 
+				a(href="/get-start") getting started 
+				| page.
+			.col-md-4.app-desc
+				div.icon
+					i.fas.fa-chart-line
+				div.heading Get result
+				div.desc Get sales forecast for 52 weeks following your uploaded historical data. Evaluate forecast accuracy based on calculated mean square deviation and mean absolute percentage error parameters.
+
