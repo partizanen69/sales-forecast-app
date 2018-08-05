@@ -4,7 +4,7 @@ const path = require('path'),
 module.exports = {
     development: {
         rootPath: rootPath,
-        database: 'mongodb://localhost/sales-forecast',
+        database: 'mongodb://localhost:27017/sales-forecast',
         port: process.env.PORT || 3000,
     },
     production: {

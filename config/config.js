@@ -14,7 +14,13 @@ module.exports = (app, envConfig) => {
 	app.use(bodyParser.urlencoded({ extended: true }));
 	app.use(fileUpload());
 	app.use(lessMiddleware(envConfig.rootPath + '/public'));
-	app.use(session({ secret: 'ssshhhhh' }));
+	app.use(
+		session({
+			secret: 'ssshhhhh',
+			saveUninitialized: true,
+			resave: true,
+		})
+	);
 
 	//telling express to serve static objects from public folder
 	app.use(express.static(path.join(envConfig.rootPath, 'public')));

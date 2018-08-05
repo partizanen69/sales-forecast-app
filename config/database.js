@@ -6,11 +6,15 @@ module.exports = function(envConfig) {
 	require('./models/Forecast');
 	require('./models/Coefs');
 
-	// connect to database
-	mongoose.connect(
-		envConfig.database,
-		() => {
+	mongoose
+		.connect(
+			envConfig.database,
+			{ useNewUrlParser: true }
+		)
+		.then(() => {
 			console.log('Connected to the database!');
-		}
-	);
+		})
+		.catch(err => {
+			console.log(err);
+		});
 };
