@@ -3,7 +3,16 @@ include ./layout
 block content
     div.container
         h2 Demo
-        p After uploading initial data you will get the following result:
+        p 
+            | After uploading initial data (
+            a(href="/files/csv-template.csv") example
+            | ) you will get the following result:
+        h4 Demo results
+        p Mean absolute percentage error (MAPE): 0.07
+        p Mean square deviation: 
+            ul
+                li for forecasted sales (last 52 weeks): 4091.33
+                li for actual sales (input data): 3400.84
         div.result-btns
             div
                 div.chart-btn.active Chart
